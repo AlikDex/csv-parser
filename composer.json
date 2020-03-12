@@ -1,0 +1,20 @@
+{
+  "name": "alikdex/csv-parser",
+  "description": "Php CSV parser",
+  "type": "package",
+  "keywords": ["php", "csv", "parsing"],
+  "license": "MIT license",
+  "authors": [
+	  {
+      "name": "TheAnt",
+      "email": "alikdex@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+		  "Csv\\": "./src"
+    }
+  },
+  "require": {
+  }
+}
