@@ -1,13 +1,4 @@
 <?php
-/**
- * The Offdev Project
- *
- * Offdev/Csv - Reads, parses and validates CSV files using streams
- *
- * @author      Pascal Severin <pascal@offdev.net>
- * @copyright   Copyright (c) 2018, Pascal Severin
- * @license     Apache License 2.0
- */
 declare(strict_types=1);
 
 namespace Csv\Tests;
