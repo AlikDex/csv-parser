@@ -1,0 +1,6 @@
+num,col,text
+1,col1,test string one
+2,col2,"test string two"
+3,col3,"test ""string"" two"
+4,"col4",test
+5,col5,"test, string"

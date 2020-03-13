@@ -24,10 +24,11 @@ use PHPUnit\Framework\TestCase;
  */
 final class ParserTest extends TestCase
 {
-    public function testReadLineWorks(): void
+    public function testParseRowWithoutHeader(): void
     {
-        $file = new \SplFileObject(__DIR__ . '/data/without_header.csv');
+        $file = new \SplFileObject(__DIR__ . '/csv/without_header.csv');
         $parser = new Parser($file, [
+            'hasHeader' => false,
             'stopWhenError' => false,
         ]);
 
@@ -36,6 +37,26 @@ final class ParserTest extends TestCase
             $result[] = $parser->readLine();
         }
 
-        $this->assertEquals('𠜎𠜱𠝹𠱓𠱸𠲖𠳏𠳕𩶘', $result[3]->get('column1'));
+        $this->assertEquals('test "string" two', $result[2]->get(2));
+        $this->assertEquals('col4', $result[3]->get(1));
+        $this->assertEquals('test, string', $result[4]->get(2));
+    }
+
+    public function testParseRowWithHeader(): void
+    {
+        $file = new \SplFileObject(__DIR__ . '/csv/with_header.csv');
+        $parser = new Parser($file, [
+            'hasHeader' => true,
+            'stopWhenError' => false,
+        ]);
+
+        $result = [];
+        while (!$parser->eof()) {
+            $result[] = $parser->readLine();
+        }
+
+        $this->assertEquals('test "string" two', $result[2]->get('text'));
+        $this->assertEquals('col4', $result[3]->get('col'));
+        $this->assertEquals('test, string', $result[4]->get('text'));
     }
 }
