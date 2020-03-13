@@ -43,12 +43,12 @@ final class Validator
     {
         return new class implements Translator
         {
-            public function trans($key, array $replace = [], $locale = null)
+            public function get($key, array $replace = [], $locale = null)
             {
                 return $key;
             }
 
-            public function transChoice($key, $number, array $replace = [], $locale = null)
+            public function choice($key, $number, array $replace = [], $locale = null)
             {
                 return $key;
             }
