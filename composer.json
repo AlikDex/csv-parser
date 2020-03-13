@@ -10,11 +10,21 @@
       "email": "alikdex@gmail.com"
     }
   ],
+  "require": {
+    "illuminate/support": "^5.8",
+    "illuminate/validation": "^5.8"
+  },
+  "require-dev": {
+      "phpunit/phpunit": "^8"
+  },
   "autoload": {
     "psr-4": {
 		  "Csv\\": "./src"
     }
   },
-  "require": {
+  "autoload-dev": {
+      "psr-4": {
+          "Csv\\Tests\\": "tests/"
+      }
   }
 }
