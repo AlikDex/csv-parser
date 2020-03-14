@@ -36,6 +36,9 @@ final class Parser implements ParserInterface
     /** @var Item|false */
     private $currentLine = false;
 
+    /** @var array */
+    private $ignoreKeys = [];
+
     /**
      * Wraps around a stream, and accepts options
      *
@@ -44,9 +47,9 @@ final class Parser implements ParserInterface
      */
     public function __construct(\SplFileObject $csv, array $options = [])
     {
-        $this->parseOptions($options);
         $this->csv = $csv;
-        $this->buffer = '';
+        $this->addFlag(\SplFileObject::READ_CSV);
+        $this->parseOptions($options);
     }
 
     /**
@@ -81,6 +84,10 @@ final class Parser implements ParserInterface
 
     public function setHeader(array $header = []): ParserInterface
     {
+        if ($this->hasHeader) {
+            $this->skipFirstLine = true;
+        }
+
         $this->hasHeader = true;
         $this->header = $header;
 
@@ -124,7 +131,6 @@ final class Parser implements ParserInterface
     public function next()
     {
         $this->currentLine = $this->readLine();
-        $this->csv->next();
     }
 
     /**
@@ -157,8 +163,20 @@ final class Parser implements ParserInterface
      */
     private function parseHeader()
     {
+        if ($this->skipFirstLine && $this->key() === 0) {
+            $line = $this->csv->fgetcsv();
+
+            if ($this->hasHeader === true && empty($this->header)) {
+                $this->header = \array_keys($line);
+            }
+        }
+
         if ($this->hasHeader && empty($this->header)) {
-            $this->header = $this->csv->fgetcsv();
+            do {
+                $data = $this->csv->fgetcsv();
+            } while($data === null && !$this->eof());
+
+            $this->header = $data;
         }
     }
 
@@ -185,7 +203,7 @@ final class Parser implements ParserInterface
             throw new \RuntimeException('Resource document is not readable!');
         }
 
-        $this->rewind();
+        // $this->rewind();
 
         while (!$this->eof()) {
             $this->readLine();
@@ -209,10 +227,6 @@ final class Parser implements ParserInterface
         $this->parseHeader();
 
         $rowData = $this->csv->fgetcsv();
-
-        if ($this->skipFirstLine && $this->key() === 0) {
-            return false;
-        }
 
         if (empty($rowData)) {
             return false;
@@ -278,6 +292,8 @@ final class Parser implements ParserInterface
             $record = new Item($line);
         }
 
+        $record->forget($this->ignoreKeys);
+
         return $record;
     }
 
@@ -318,14 +334,32 @@ final class Parser implements ParserInterface
      */
     private function parseOptions(array $options)
     {
-        /*$this->bufferSize = $this->arrayGet($options, 'integer', static::OPTION_BUFSIZE, 1024);
-        $this->delimiter = $this->arrayGet($options, 'string', static::OPTION_DELIMITER, ',');
-        $this->stringEnclosure = $this->arrayGet($options, 'string', static::OPTION_STRING_ENCLOSURE, '"');
-        $this->escapeChar = $this->arrayGet($options, 'string', static::OPTION_ESCAPE_CHAR, '\\');
-        $this->lineEnding = $this->arrayGet($options, 'string', static::OPTION_EOL, "\n");
-        $this->hasHeader = $this->arrayGet($options, 'boolean', static::OPTION_HEADER, true);*/
         $this->hasHeader = (bool) ($options['hasHeader'] ?? true);
         $this->stopWhenError = (bool) ($options['stopWhenError'] ?? true);
         $this->skipFirstLine = (bool) ($options['skipFirstLine'] ?? false);
+        $this->ignoreKeys = (array) ($options['ignoreKeys'] ?? []);
+    }
+
+        /**
+     * Check csv flag is set
+     *
+     * @param integer $flag
+     * @return boolean
+     */
+    private function hasFlag(int $flag): bool
+    {
+        return $this->csv->getFlags() & $flag;
+    }
+
+    /**
+     * Add flags to SplFileObject
+     *
+     * @param integer $flag
+     */
+    private function addFlag(int $flag): void
+    {
+        if (!$this->hasFlag($flag)) {
+            $this->csv->setFlags($this->csv->getFlags() | $flag);
+        }
     }
 }
